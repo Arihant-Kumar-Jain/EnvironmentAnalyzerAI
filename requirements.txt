@@ -5,6 +5,7 @@ albumentations==1.4.20
 annotated-types==0.7.0
 astunparse==1.6.3
 attrs==25.3.0
+beautifulsoup4==4.13.3
 blinker==1.9.0
 blis==1.2.0
 catalogue==2.0.10
@@ -29,6 +30,7 @@ flatbuffers==25.2.10
 fonttools==4.56.0
 fsspec==2025.3.0
 gast==0.6.0
+gdown==5.2.0
 google-pasta==0.2.0
 grpcio==1.71.0
 gunicorn==23.0.0
@@ -67,6 +69,7 @@ pydantic==2.11.1
 pydantic_core==2.33.0
 Pygments==2.19.1
 pyparsing==3.2.3
+PySocks==1.7.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
 PyYAML==6.0.2
@@ -80,6 +83,7 @@ setuptools==78.1.0
 shellingham==1.5.4
 six==1.17.0
 smart-open==7.1.0
+soupsieve==2.6
 spacy==3.8.4
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
