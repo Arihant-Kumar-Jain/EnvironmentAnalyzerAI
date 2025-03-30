@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environmental Analysis Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        
+        /* Cosmic Background */
+        #cosmic-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(ellipse at center, #0a2e38 0%, #000000 70%);
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .cursor-glow {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(74, 138, 255, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+            pointer-events: none;
+            z-index: 1;
+            transform: translate(-50%, -50%);
+        }
+        
+        .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(74, 138, 255, 0.8);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
+            background: rgba(12, 23, 34, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-header {
+            background: rgba(18, 36, 53, 0.9);
+            padding: 15px 20px;
+            border-bottom: 2px solid rgba(74, 138, 255, 0.5);
+        }
+        
+        .card-header h5 {
+            color: #4a8aff;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .form-control {
+            background-color: rgba(21, 41, 61, 0.6);
+            border: 1px solid rgba(74, 138, 255, 0.3);
+            color: #fff;
+            border-radius: 6px;
+            padding: 12px 15px;
+        }
+        
+        .form-control:focus {
+            background-color: rgba(21, 41, 61, 0.8);
+            border-color: rgba(74, 138, 255, 0.7);
+            box-shadow: 0 0 0 0.25rem rgba(74, 138, 255, 0.25);
+            color: #fff;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4a8aff 0%, #0045b5 100%);
+            border: none;
+            border-radius: 6px;
+            padding: 12px 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+            background: linear-gradient(135deg, #4a8aff 0%, #1a5fcf 100%);
+        }
+        
+        .tabs-container {
+            display: flex;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+        
+        .tab {
+            padding: 12px 25px;
+            margin: 0 5px;
+            background-color: rgba(21, 41, 61, 0.6);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid rgba(74, 138, 255, 0.3);
+        }
+        
+        .tab:hover {
+            background-color: rgba(74, 138, 255, 0.2);
+            border-color: rgba(74, 138, 255, 0.5);
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #4a8aff 0%, #0045b5 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+        }
+        
+        .prediction-card {
+            margin-top: 25px;
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .future-prediction {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .future-prediction:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .likely-flooded {
+            background-color: rgba(255, 80, 80, 0.2);
+            border: 1px solid rgba(255, 80, 80, 0.4);
+        }
+        
+        .likely-not-flooded {
+            background-color: rgba(80, 255, 120, 0.2);
+            border: 1px solid rgba(80, 255, 120, 0.4);
+        }
+        
+        .forest {
+            background-color: rgba(80, 255, 120, 0.2);
+            border: 1px solid rgba(80, 255, 120, 0.4);
+        }
+        
+        .not-forest {
+            background-color: rgba(255, 150, 80, 0.2);
+            border: 1px solid rgba(255, 150, 80, 0.4);
+        }
+        
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        #loading .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: #4a8aff !important;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .alert-danger {
+            background-color: rgba(255, 80, 80, 0.2);
+            border: 1px solid rgba(255, 80, 80, 0.4);
+            color: #ff8080;
+        }
+        
+        .alert-success {
+            background-color: rgba(80, 255, 120, 0.2);
+            border: 1px solid rgba(80, 255, 120, 0.4);
+            color: #80ff98;
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 180, 80, 0.2);
+            border: 1px solid rgba(255, 180, 80, 0.4);
+            color: #ffb450;
+        }
+        
+        img.img-fluid {
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        img.img-fluid:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Cosmic Background -->
+    <div id="cosmic-background"></div>
+    <div class="stars"></div>
+    <div class="cursor-glow"></div>
+    
+    <div class="container">
+        <h1 class="text-center mb-4">Environmental Analysis Tool</h1>
+        
+        <div class="tabs-container">
+            <div id="floodTab" class="tab active" onclick="switchTab('flood')">Flood Detection</div>
+            <div id="forestTab" class="tab" onclick="switchTab('forest')">Forest Coverage</div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 id="uploadTitle">Upload Satellite Image for Flood Detection</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="predictionForm" enctype="multipart/form-data">
+                            <input type="hidden" id="modelType" name="model_type" value="flood">
+                            
+                            <div class="mb-3">
+                                <label for="imageUpload" class="form-label">Select Image:</label>
+                                <input type="file" class="form-control" id="imageUpload" name="file" accept="image/*">
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Analyze Image</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Processing image...</p>
+                </div>
+                
+                <!-- Flood Results Section -->
+                <div id="floodResults" class="results-section card prediction-card">
+                    <div class="card-header">
+                        <h5>Flood Detection Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <img id="floodImage" class="img-fluid rounded" alt="Analyzed Image">
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Current Status:</h4>
+                                <h3 id="floodResult" class="alert"></h3>
+                                <p>Confidence: <span id="floodProbability"></span>%</p>
+                                
+                                <h4 class="mt-4">5-Day Forecast:</h4>
+                                <div id="floodForecast"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Forest Results Section -->
+                <div id="forestResults" class="results-section card prediction-card">
+                    <div class="card-header">
+                        <h5>Forest Coverage Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <img id="forestImage" class="img-fluid rounded" alt="Analyzed Image">
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Current Status:</h4>
+                                <h3 id="forestResult" class="alert"></h3>
+                                <p>Forest Probability: <span id="forestProbability"></span>%</p>
+                                <p>Coverage Percentage: <span id="coveragePercentage"></span>%</p>
+                                
+                                <h4 class="mt-4">5-Month Forecast:</h4>
+                                <div id="forestForecast"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="errorAlert" class="alert alert-danger mt-3" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Create stars
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            const starCount = 250;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                const size = Math.random() * 3;
+                
+                // Random positions
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                
+                // Random opacity and delay for twinkling
+                const opacity = Math.random() * 0.8 + 0.2;
+                const delay = Math.random() * 10;
+                const duration = 3 + Math.random() * 5;
+                
+                star.style.cssText = `
+                    position: absolute;
+                    top: ${y}%;
+                    left: ${x}%;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background-color: #fff;
+                    border-radius: 50%;
+                    opacity: ${opacity};
+                    animation: twinkle ${duration}s ease-in-out infinite;
+                    animation-delay: ${delay}s;
+                `;
+                
+                starsContainer.appendChild(star);
+            }
+            
+            // Add occasional shooting stars
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    createShootingStar();
+                }
+            }, 3000);
+        }
+        
+        function createShootingStar() {
+            const starsContainer = document.querySelector('.stars');
+            const shootingStar = document.createElement('div');
+            
+            const startX = Math.random() * 100;
+            const startY = Math.random() * 100;
+            const angle = Math.random() * 45;
+            
+            shootingStar.style.cssText = `
+                position: absolute;
+                top: ${startY}%;
+                left: ${startX}%;
+                width: 100px;
+                height: 2px;
+                background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 50%, rgba(255,255,255,0) 100%);
+                transform: rotate(${angle}deg);
+                opacity: 0;
+                animation: shootingStar 1s ease-in-out forwards;
+            `;
+            
+            starsContainer.appendChild(shootingStar);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                shootingStar.remove();
+            }, 1000);
+        }
+        
+        // Add cursor glow effect
+        document.addEventListener('mousemove', (e) => {
+            const cursorGlow = document.querySelector('.cursor-glow');
+            cursorGlow.style.left = e.clientX + 'px';
+            cursorGlow.style.top = e.clientY + 'px';
+        });
+        
+        // Add animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes twinkle {
+                0%, 100% { opacity: 0.2; }
+                50% { opacity: 1; }
+            }
+            
+            @keyframes shootingStar {
+                0% { opacity: 0; transform: translateX(-50px) translateY(50px) rotate(${Math.random() * 45}deg); }
+                20% { opacity: 1; }
+                100% { opacity: 0; transform: translateX(50px) translateY(-50px) rotate(${Math.random() * 45}deg); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize stars on page load
+        window.addEventListener('load', createStars);
+        
+        function switchTab(modelType) {
+            // Update active tab
+            document.getElementById('floodTab').classList.remove('active');
+            document.getElementById('forestTab').classList.remove('active');
+            document.getElementById(modelType + 'Tab').classList.add('active');
+            
+            // Update form title
+            document.getElementById('uploadTitle').textContent = 
+                modelType === 'flood' ? 'Upload Satellite Image for Flood Detection' : 'Upload Satellite Image for Forest Coverage Analysis';
+            
+            // Update hidden input
+            document.getElementById('modelType').value = modelType;
+            
+            // Reset the form and hide any results
+            document.getElementById('predictionForm').reset();
+            document.getElementById('floodResults').style.display = 'none';
+            document.getElementById('forestResults').style.display = 'none';
+            document.getElementById('errorAlert').style.display = 'none';
+        }
+        
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const modelType = document.getElementById('modelType').value;
+            
+            // Hide previous results and show loading
+            document.getElementById('floodResults').style.display = 'none';
+            document.getElementById('forestResults').style.display = 'none';
+            document.getElementById('errorAlert').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    // Show error
+                    const errorAlert = document.getElementById('errorAlert');
+                    errorAlert.textContent = data.error;
+                    errorAlert.style.display = 'block';
+                    return;
+                }
+                
+                if (data.model_type === 'flood') {
+                    // Display flood results
+                    document.getElementById('floodImage').src = data.image_path;
+                    
+                    const resultElement = document.getElementById('floodResult');
+                    resultElement.textContent = data.result;
+                    resultElement.className = 'alert ' + (data.result === 'Flooded' ? 'alert-danger' : 'alert-success');
+                    
+                    document.getElementById('floodProbability').textContent = data.probability;
+                    
+                    // Display forecast
+                    const forecastContainer = document.getElementById('floodForecast');
+                    forecastContainer.innerHTML = '';
+                    
+                    data.future_predictions.forEach(prediction => {
+                        const predDiv = document.createElement('div');
+                        predDiv.className = 'future-prediction ' + 
+                            (prediction.status === 'Likely Flooded' ? 'likely-flooded' : 'likely-not-flooded');
+                        
+                        predDiv.innerHTML = `
+                            <strong>${prediction.date}</strong>: ${prediction.status} 
+                            (${prediction.probability}% probability)
+                        `;
+                        
+                        forecastContainer.appendChild(predDiv);
+                    });
+                    
+                    document.getElementById('floodResults').style.display = 'block';
+                }
+                else if (data.model_type === 'forest') {
+                    // Display forest results
+                    document.getElementById('forestImage').src = data.image_path;
+                    
+                    const resultElement = document.getElementById('forestResult');
+                    resultElement.textContent = data.result;
+                    resultElement.className = 'alert ' + (data.result === 'Forest' ? 'alert-success' : 'alert-warning');
+                    
+                    document.getElementById('forestProbability').textContent = data.forest_probability;
+                    document.getElementById('coveragePercentage').textContent = data.coverage_percentage;
+                    
+                    // Display forecast
+                    const forecastContainer = document.getElementById('forestForecast');
+                    forecastContainer.innerHTML = '';
+                    
+                    data.future_predictions.forEach(prediction => {
+                        const predDiv = document.createElement('div');
+                        predDiv.className = 'future-prediction ' + 
+                            (prediction.status === 'Forest' ? 'forest' : 'not-forest');
+                        
+                        predDiv.innerHTML = `
+                            <strong>${prediction.date}</strong>: ${prediction.status} 
+                            (${prediction.forest_probability}% probability)
+                            <br>
+                            Coverage: ${prediction.coverage_percentage}%
+                        `;
+                        
+                        forecastContainer.appendChild(predDiv);
+                    });
+                    
+                    document.getElementById('forestResults').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                const errorAlert = document.getElementById('errorAlert');
+                errorAlert.textContent = 'An error occurred: ' + error.message;
+                errorAlert.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>
